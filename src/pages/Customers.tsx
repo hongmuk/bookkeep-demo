@@ -1,71 +1,162 @@
 import { useState } from 'react';
-import { Search, Phone, Tag, AlertTriangle, Calendar } from 'lucide-react';
-import { customerList, bookingList, statusLabels, statusColors } from '../data/mock';
+import { Search, UserCheck, Clock } from 'lucide-react';
+import { customerList, bookingList, statusLabels } from '../data/mock';
 
 export default function Customers() {
   const [search, setSearch] = useState('');
-  const [selectedId, setSelectedId] = useState<string | null>(null);
-  const filtered = customerList.filter((c) => c.name.includes(search) || c.phone.includes(search));
+  const [selectedId, setSelectedId] = useState<string | null>(customerList[0].id);
+
+  const filtered = customerList.filter(
+    (c) => c.name.includes(search) || c.phone.includes(search)
+  );
+
   const selected = selectedId ? customerList.find((c) => c.id === selectedId) : null;
-  const history = selected ? bookingList.filter((b) => b.customerId === selected.id).sort((a, b) => b.date.localeCompare(a.date)) : [];
+  const customerBookings = selected
+    ? bookingList.filter((b) => b.customerId === selected.id).sort((a, b) => b.date.localeCompare(a.date))
+    : [];
 
   return (
-    <div className="space-y-6 max-w-[1200px]">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 className="text-xl font-bold text-gray-900">고객관리</h2>
-        <span className="text-[13px] text-gray-400">총 {customerList.length}명</span>
+    <div className="space-y-8 animate-fade-in">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-slate-100 pb-8">
+        <div className="space-y-1">
+          <h2 className="text-2xl font-black text-slate-900 tracking-tight">고객 아카이브</h2>
+          <p className="text-sm font-medium text-slate-500 uppercase tracking-widest flex items-center gap-2">
+            <UserCheck className="w-3.5 h-3.5" /> CRM Intelligence / {customerList.length} Members
+          </p>
+        </div>
+        <div className="relative w-full md:w-80 group">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-slate-900 transition-colors" />
+          <input
+            type="text"
+            placeholder="고객명 또는 연락처 검색"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full pl-12 pr-6 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-bold focus:outline-none focus:ring-4 focus:ring-slate-100 focus:border-slate-900 transition-all shadow-sm"
+          />
+        </div>
       </div>
-      <div className="grid lg:grid-cols-3 gap-4">
-        <div className="space-y-3">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-            <input type="text" placeholder="이름 또는 전화번호 검색" value={search} onChange={(e) => setSearch(e.target.value)} className="w-full pl-9 pr-3 py-2.5 text-[13px] border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-200 bg-white" />
+
+      <div className="grid lg:grid-cols-12 gap-8">
+        {/* Customer List Sidebar */}
+        <div className="lg:col-span-4 space-y-3">
+          <div className="px-2 mb-4">
+            <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Member Directory</h3>
           </div>
-          <div className="space-y-1.5 max-h-[calc(100vh-260px)] overflow-y-auto">
+          <div className="space-y-2 max-h-[calc(100vh-320px)] overflow-y-auto pr-2 custom-scrollbar">
             {filtered.map((c) => (
-              <button key={c.id} onClick={() => setSelectedId(c.id)} className={`w-full flex items-center gap-3 p-3 rounded-xl border transition-colors text-left ${selectedId === c.id ? 'bg-primary-50 border-primary-200' : 'bg-white border-gray-100 hover:bg-gray-50'}`}>
-                <div className={`w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold ${c.gender === 'F' ? 'bg-pink-100 text-pink-600' : 'bg-blue-100 text-blue-600'}`}>{c.name[0]}</div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-1.5"><span className="text-[13px] font-semibold text-gray-800">{c.name}</span>{c.noShowCount > 0 && <AlertTriangle className="w-3 h-3 text-red-400" />}</div>
-                  <p className="text-[11px] text-gray-400">{c.phone} · 방문 {c.visitCount}회</p>
+              <button
+                key={c.id}
+                onClick={() => setSelectedId(c.id)}
+                className={`w-full group flex items-center gap-4 p-4 rounded-2xl border transition-all duration-300
+                  ${selectedId === c.id 
+                    ? 'bg-white border-slate-900 shadow-xl translate-x-1' 
+                    : 'bg-white border-slate-100 shadow-sm hover:border-slate-300 hover:bg-slate-50'}`}
+              >
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-xs font-black shadow-inner
+                  ${c.gender === 'F' ? 'bg-pink-50 text-pink-500' : 'bg-blue-50 text-blue-500'}`}>
+                  {c.name[0]}
                 </div>
-                {c.tags.includes('VIP') && <span className="text-[9px] px-1.5 py-0.5 rounded bg-amber-100 text-amber-600 font-bold">VIP</span>}
+                <div className="flex-1 text-left min-w-0">
+                  <p className="text-sm font-black text-slate-900 tracking-tight">{c.name}</p>
+                  <p className="text-[11px] font-bold text-slate-400 tabular-nums uppercase mt-0.5">{c.phone}</p>
+                </div>
+                {c.tags.includes('VIP') && (
+                  <div className="w-1.5 h-1.5 rounded-full bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.6)]" />
+                )}
               </button>
             ))}
           </div>
         </div>
-        <div className="lg:col-span-2">
+
+        {/* Customer Detail Surface */}
+        <div className="lg:col-span-8">
           {selected ? (
-            <div className="bg-white rounded-xl border border-gray-100 p-5 space-y-5">
-              <div className="flex items-center gap-4">
-                <div className={`w-14 h-14 rounded-full flex items-center justify-center text-lg font-bold ${selected.gender === 'F' ? 'bg-pink-100 text-pink-600' : 'bg-blue-100 text-blue-600'}`}>{selected.name[0]}</div>
-                <div><h3 className="text-lg font-bold text-gray-900">{selected.name}</h3><div className="flex items-center gap-3 mt-1"><span className="flex items-center gap-1 text-[12px] text-gray-500"><Phone className="w-3 h-3" /> {selected.phone}</span><span className="text-[12px] text-gray-400">방문 {selected.visitCount}회</span>{selected.noShowCount > 0 && <span className="text-[12px] text-red-500 font-medium">노쇼 {selected.noShowCount}회</span>}</div></div>
-              </div>
-              {selected.tags.length > 0 && (
-                <div className="flex items-center gap-1.5 flex-wrap">
-                  <Tag className="w-3.5 h-3.5 text-gray-400" />
-                  {selected.tags.map((tag) => <span key={tag} className={`text-[11px] px-2 py-0.5 rounded-full font-medium ${tag === 'VIP' ? 'bg-amber-100 text-amber-700' : tag === '노쇼주의' ? 'bg-red-100 text-red-600' : tag === '신규' ? 'bg-emerald-100 text-emerald-600' : 'bg-gray-100 text-gray-600'}`}>{tag}</span>)}
-                </div>
-              )}
-              {selected.memo && <div className="bg-gray-50 rounded-lg p-3"><p className="text-[12px] text-gray-400 font-semibold mb-1">메모</p><p className="text-[13px] text-gray-700">{selected.memo}</p></div>}
-              <div>
-                <h4 className="text-[14px] font-bold text-gray-800 mb-3 flex items-center gap-2"><Calendar className="w-4 h-4 text-primary-500" /> 방문 이력</h4>
-                {history.length === 0 ? <p className="text-[13px] text-gray-400 py-4 text-center">방문 이력이 없습니다</p> : (
-                  <div className="space-y-2">
-                    {history.slice(0, 10).map((b) => (
-                      <div key={b.id} className="flex items-center gap-3 p-2.5 rounded-lg bg-gray-50">
-                        <div className="text-center min-w-[50px]"><p className="text-[11px] text-gray-400">{b.date.slice(5)}</p><p className="text-[12px] font-semibold text-gray-700">{b.startTime}</p></div>
-                        <div className="flex-1"><p className="text-[13px] text-gray-700">{b.services.map((s) => s.name).join(', ')}</p><p className="text-[11px] text-gray-400">{b.staffName}</p></div>
-                        <span className="text-[13px] font-semibold text-gray-700">₩{b.totalPrice.toLocaleString()}</span>
-                        <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${statusColors[b.status]}`}>{statusLabels[b.status]}</span>
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-500">
+              {/* Profile Header */}
+              <div className="p-8 lg:p-12 border-b border-slate-50 space-y-10">
+                <div className="flex flex-col md:flex-row gap-10 items-start md:items-center">
+                  <div className={`w-24 h-24 rounded-[32px] flex items-center justify-center text-[32px] font-black border-4 border-white shadow-xl
+                    ${selected.gender === 'F' ? 'bg-pink-50 text-pink-500' : 'bg-blue-50 text-blue-500'}`}>
+                    {selected.name[0]}
+                  </div>
+                  <div className="flex-1 space-y-4">
+                    <div className="flex items-center gap-4">
+                      <h3 className="text-4xl font-black text-slate-900 tracking-tighter">{selected.name}</h3>
+                      <div className="flex gap-1.5">
+                        {selected.tags.map(tag => (
+                          <span key={tag} className="px-2.5 py-1 bg-slate-900 text-white rounded-lg text-[9px] font-black uppercase tracking-widest">{tag}</span>
+                        ))}
                       </div>
-                    ))}
+                    </div>
+                    <div className="flex flex-wrap items-center gap-8">
+                      <div className="flex flex-col">
+                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Contact</span>
+                        <span className="text-sm font-bold text-slate-900 tabular-nums">{selected.phone}</span>
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Loyalty</span>
+                        <span className="text-sm font-bold text-slate-900 tabular-nums">{selected.visitCount} Visits</span>
+                      </div>
+                      {selected.noShowCount > 0 && (
+                        <div className="flex flex-col">
+                          <span className="text-[10px] font-black text-red-400 uppercase tracking-widest mb-1">Alert</span>
+                          <span className="text-sm font-bold text-red-500 tabular-nums">{selected.noShowCount} No-Shows</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {selected.memo && (
+                  <div className="relative p-6 bg-slate-50 rounded-2xl border border-slate-100 italic font-medium text-slate-600 leading-relaxed">
+                    <div className="absolute -top-3 left-6 px-2 bg-white text-[10px] font-black text-slate-400 border border-slate-100 rounded-full uppercase tracking-widest">Master Memo</div>
+                    "{selected.memo}"
                   </div>
                 )}
               </div>
+
+              {/* History Table */}
+              <div className="p-8 lg:p-12 space-y-8">
+                <div className="flex items-center justify-between border-b border-slate-50 pb-6">
+                  <h4 className="text-xs font-black text-slate-900 uppercase tracking-[0.3em] flex items-center gap-2">
+                    <Clock className="w-4 h-4 text-slate-400" /> Visit Log Archive
+                  </h4>
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest tabular-nums">Showing Latest 10</span>
+                </div>
+                
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left table-compact">
+                    <thead>
+                      <tr className="bg-slate-50/50">
+                        {['Date', 'Service Detail', 'Professional', 'Amount', 'Status'].map((h) => (
+                          <th key={h} className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{h}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-50">
+                      {customerBookings.map((b) => (
+                        <tr key={b.id} className="hover:bg-slate-50/30 transition-colors">
+                          <td className="font-bold text-slate-900 tabular-nums">{b.date.slice(5)}</td>
+                          <td className="text-slate-600 font-medium">{b.services.map((s) => s.name).join(', ')}</td>
+                          <td className="font-bold text-slate-700">{b.staffName}</td>
+                          <td className="font-bold text-slate-900 tabular-nums">₩{b.totalPrice.toLocaleString()}</td>
+                          <td>
+                            <div className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-tighter ${b.status === 'completed' ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'}`}>
+                              {statusLabels[b.status]}
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
             </div>
           ) : (
-            <div className="bg-white rounded-xl border border-gray-100 p-12 text-center"><p className="text-sm text-gray-400">좌측에서 고객을 선택하세요</p></div>
+            <div className="h-full min-h-[400px] flex items-center justify-center bg-slate-50 rounded-2xl border border-dashed border-slate-200">
+              <p className="text-sm font-black text-slate-300 uppercase tracking-[0.2em]">Select a client profile</p>
+            </div>
           )}
         </div>
       </div>

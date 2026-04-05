@@ -1,69 +1,121 @@
 import { useState } from 'react';
-import { TrendingUp, CreditCard, Banknote, Wallet } from 'lucide-react';
+import { TrendingUp, CreditCard, Banknote, Wallet, ArrowUpRight, ArrowDownRight, Calendar } from 'lucide-react';
 import { getDailySales } from '../data/mock';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
-
-const COLORS = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 
 export default function Sales() {
   const [period, setPeriod] = useState<'week' | 'month'>('month');
-  const all = getDailySales();
-  const sales = period === 'week' ? all.slice(-7) : all;
-  const total = sales.reduce((s, d) => s + d.total, 0);
-  const card = sales.reduce((s, d) => s + d.card, 0);
-  const cash = sales.reduce((s, d) => s + d.cash, 0);
-  const naver = sales.reduce((s, d) => s + d.naverPay, 0);
-  const kakao = sales.reduce((s, d) => s + d.kakaoPay, 0);
-  const other = sales.reduce((s, d) => s + d.other, 0);
-  const avg = Math.round(total / sales.filter(d => d.total > 0).length);
-  const pie = [{ name: '카드', value: card }, { name: '현금', value: cash }, { name: '네이버페이', value: naver }, { name: '카카오페이', value: kakao }, { name: '기타', value: other }];
+  const allSales = getDailySales();
+  const sales = period === 'week' ? allSales.slice(-7) : allSales;
+
+  const totalRevenue = sales.reduce((s, d) => s + d.total, 0);
+  const totalCard = sales.reduce((s, d) => s + d.card, 0);
+  const totalCash = sales.reduce((s, d) => s + d.cash, 0);
+  const avgDaily = Math.round(totalRevenue / sales.filter(d => d.total > 0).length);
+
+  const pieData = [
+    { name: 'Card', value: totalCard, color: '#0f172a' },
+    { name: 'Cash', value: totalCash, color: '#64748b' },
+    { name: 'Other', value: totalRevenue - totalCard - totalCash, color: '#cbd5e1' },
+  ];
 
   return (
-    <div className="space-y-6 max-w-[1200px]">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 className="text-xl font-bold text-gray-900">매출현황</h2>
-        <div className="flex bg-gray-100 rounded-lg p-0.5">
-          <button onClick={() => setPeriod('week')} className={`text-[12px] px-3 py-1.5 rounded-md font-medium ${period === 'week' ? 'bg-white text-gray-800 shadow-sm' : 'text-gray-500'}`}>최근 7일</button>
-          <button onClick={() => setPeriod('month')} className={`text-[12px] px-3 py-1.5 rounded-md font-medium ${period === 'month' ? 'bg-white text-gray-800 shadow-sm' : 'text-gray-500'}`}>최근 30일</button>
+    <div className="space-y-8 animate-fade-in">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+        <div className="space-y-1">
+          <h2 className="text-2xl font-black text-slate-900 tracking-tight">매출 분석</h2>
+          <p className="text-sm font-medium text-slate-500 uppercase tracking-widest flex items-center gap-2">
+            <Calendar className="w-3.5 h-3.5" /> Financial Intelligence
+          </p>
+        </div>
+        <div className="flex bg-slate-100 p-1 rounded-xl border border-slate-200/50">
+          <button
+            onClick={() => setPeriod('week')}
+            className={`px-4 py-1.5 rounded-lg text-xs font-black uppercase transition-all ${period === 'week' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+          >7 Days</button>
+          <button
+            onClick={() => setPeriod('month')}
+            className={`px-4 py-1.5 rounded-lg text-xs font-black uppercase transition-all ${period === 'month' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+          >30 Days</button>
         </div>
       </div>
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <SC icon={TrendingUp} label="총 매출" value={total} cls="bg-primary-50 text-primary-600" />
-        <SC icon={CreditCard} label="카드 매출" value={card} cls="bg-blue-50 text-blue-600" />
-        <SC icon={Banknote} label="현금 매출" value={cash} cls="bg-emerald-50 text-emerald-600" />
-        <SC icon={Wallet} label="일 평균" value={avg} cls="bg-amber-50 text-amber-600" />
+
+      {/* Summary Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <MetricCard label="Total Revenue" value={totalRevenue} trend="+12.5%" icon={TrendingUp} color="indigo" />
+        <MetricCard label="Card Payout" value={totalCard} trend="+8.2%" icon={CreditCard} color="slate" />
+        <MetricCard label="Cash Income" value={totalCash} trend="-2.4%" icon={Banknote} color="emerald" />
+        <MetricCard label="Daily Avg" value={avgDaily} trend="+5.1%" icon={Wallet} color="amber" />
       </div>
-      <div className="grid lg:grid-cols-3 gap-4">
-        <div className="lg:col-span-2 bg-white rounded-xl border border-gray-100 p-5">
-          <h3 className="text-[15px] font-bold text-gray-800 mb-4">일별 매출</h3>
-          <ResponsiveContainer width="100%" height={280}>
-            <BarChart data={sales}>
-              <XAxis dataKey="date" tickFormatter={(v: string) => `${v.slice(5,7)}/${v.slice(8)}`} tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
-              <YAxis tickFormatter={(v: number) => `${(v/10000).toFixed(0)}만`} tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
-              <Tooltip formatter={(v: unknown) => [`₩${Number(v).toLocaleString()}`, '']} contentStyle={{ fontSize: 12, borderRadius: 8, border: '1px solid #e5e7eb' }} />
-              <Bar dataKey="card" stackId="a" fill="#6366f1" name="카드" />
-              <Bar dataKey="cash" stackId="a" fill="#10b981" name="현금" />
-              <Bar dataKey="naverPay" stackId="a" fill="#f59e0b" name="네이버페이" />
-              <Bar dataKey="kakaoPay" stackId="a" fill="#ef4444" name="카카오페이" />
-              <Bar dataKey="other" stackId="a" fill="#8b5cf6" radius={[4,4,0,0]} name="기타" />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-        <div className="bg-white rounded-xl border border-gray-100 p-5">
-          <h3 className="text-[15px] font-bold text-gray-800 mb-4">결제수단별</h3>
-          <ResponsiveContainer width="100%" height={200}>
-            <PieChart><Pie data={pie} cx="50%" cy="50%" innerRadius={50} outerRadius={75} dataKey="value" paddingAngle={3}>{pie.map((_, i) => <Cell key={i} fill={COLORS[i]} />)}</Pie>
-              <Tooltip formatter={(v: unknown) => [`₩${Number(v).toLocaleString()}`, '']} contentStyle={{ fontSize: 12, borderRadius: 8 }} />
-              <Legend formatter={(v: string) => <span style={{ fontSize: 11, color: '#6b7280' }}>{v}</span>} iconSize={8} />
-            </PieChart>
-          </ResponsiveContainer>
-          <div className="mt-3 space-y-2">
-            {pie.map((d, i) => (
-              <div key={d.name} className="flex items-center justify-between text-[12px]">
-                <div className="flex items-center gap-2"><div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: COLORS[i] }} /><span className="text-gray-600">{d.name}</span></div>
-                <span className="font-semibold text-gray-700">₩{d.value.toLocaleString()}</span>
+
+      <div className="grid lg:grid-cols-12 gap-6">
+        {/* Main Chart */}
+        <div className="lg:col-span-8 bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col h-[480px]">
+          <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/30">
+            <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider">Revenue Timeline</h3>
+            <div className="flex items-center gap-4 text-[11px] font-black text-slate-400">
+              <div className="flex items-center gap-1.5">
+                <div className="w-2 h-2 rounded-full bg-slate-900" /> TOTAL
               </div>
-            ))}
+            </div>
+          </div>
+          <div className="p-8 flex-1">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={sales} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
+                <XAxis dataKey="date" tickFormatter={(v: string) => v.slice(8)} tick={{ fontSize: 11, fontWeight: 700, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
+                <YAxis hide />
+                <Tooltip 
+                  cursor={{ fill: '#f8fafc' }}
+                  content={({ active, payload }) => {
+                    if (active && payload && payload.length) return (
+                      <div className="bg-slate-900 text-white px-3 py-2 rounded-lg text-xs font-bold shadow-xl border border-slate-800">
+                        ₩{Number(payload[0].value).toLocaleString()}
+                      </div>
+                    );
+                    return null;
+                  }}
+                />
+                <Bar dataKey="total" fill="#0f172a" radius={[6, 6, 6, 6]} barSize={period === 'week' ? 32 : 10} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* Distribution Panel */}
+        <div className="lg:col-span-4 space-y-6">
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-8 flex flex-col h-full">
+            <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-8">Payment Methods</h3>
+            <div className="flex-1 flex flex-col justify-between">
+              <div className="relative w-48 h-48 mx-auto">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie data={pieData} innerRadius={60} outerRadius={85} paddingAngle={5} dataKey="value">
+                      {pieData.map((d, i) => <Cell key={i} fill={d.color} stroke="none" />)}
+                    </Pie>
+                  </PieChart>
+                </ResponsiveContainer>
+                <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Share</span>
+                  <span className="text-xl font-black text-slate-900 tabular-nums">Ratio</span>
+                </div>
+              </div>
+              
+              <div className="space-y-4 pt-8">
+                {pieData.map((d) => (
+                  <div key={d.name} className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: d.color }} />
+                      <span className="text-xs font-bold text-slate-600 uppercase tracking-widest">{d.name}</span>
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <span className="text-[11px] font-bold text-slate-400">{( (d.value/totalRevenue) * 100 ).toFixed(1)}%</span>
+                      <span className="text-sm font-black text-slate-900 tabular-nums">₩{(d.value/10000).toFixed(0)}만</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -71,12 +123,25 @@ export default function Sales() {
   );
 }
 
-function SC({ icon: Icon, label, value, cls }: { icon: any; label: string; value: number; cls: string }) {
+function MetricCard({ label, value, trend, icon: Icon, color: _color }: { label: string; value: number | string; trend: string; icon: any; color: string }) {
+  const isUp = trend.startsWith('+');
   return (
-    <div className="bg-white rounded-xl border border-gray-100 p-4">
-      <div className={`w-9 h-9 rounded-lg ${cls} flex items-center justify-center mb-3`}><Icon className="w-[18px] h-[18px]" /></div>
-      <p className="text-[12px] text-gray-400 font-medium">{label}</p>
-      <p className="text-lg font-bold text-gray-900 mt-0.5">₩{value.toLocaleString()}</p>
+    <div className="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm hover:shadow-md transition-all group">
+      <div className="flex items-center justify-between mb-4">
+        <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center border border-slate-100 group-hover:bg-slate-900 group-hover:text-white transition-colors">
+          <Icon className="w-5 h-5" />
+        </div>
+        <div className={`flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-black ${isUp ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600'}`}>
+          {isUp ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
+          {trend}
+        </div>
+      </div>
+      <div>
+        <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-1">{label}</p>
+        <p className="text-2xl font-black text-slate-900 tabular-nums tracking-tight">
+          ₩{typeof value === 'number' ? value.toLocaleString() : value}
+        </p>
+      </div>
     </div>
   );
 }

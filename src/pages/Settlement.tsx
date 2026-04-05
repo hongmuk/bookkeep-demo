@@ -1,79 +1,156 @@
 import { useState } from 'react';
-import { Download, ChevronDown, ChevronUp } from 'lucide-react';
+import { Download, ChevronDown, FileText, CheckCircle2 } from 'lucide-react';
 import { getSettlements, staffList } from '../data/mock';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 
 export default function Settlement() {
   const [month, setMonth] = useState('2026-03');
   const settlements = getSettlements(month);
-  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [expandedId, setExpandedId] = useState<string | null>(settlements[0]?.staffId || null);
+
   const totalSales = settlements.reduce((s, st) => s + st.totalSales, 0);
   const totalPayout = settlements.reduce((s, st) => s + st.netAmount, 0);
-  const chart = settlements.map((s) => ({ name: s.staffName, 매출: s.totalSales, 지급액: s.netAmount }));
 
   return (
-    <div className="space-y-6 max-w-[1200px]">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 className="text-xl font-bold text-gray-900">정산관리</h2>
-        <div className="flex items-center gap-2">
-          <input type="month" value={month} onChange={(e) => setMonth(e.target.value)} className="text-[13px] border border-gray-200 rounded-lg px-3 py-1.5 text-gray-600" />
-          <button className="flex items-center gap-1.5 px-3 py-1.5 border border-gray-200 rounded-lg text-[12px] text-gray-600 hover:bg-gray-50"><Download className="w-3.5 h-3.5" /> PDF</button>
+    <div className="space-y-8 animate-fade-in">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+        <div className="space-y-1">
+          <h2 className="text-2xl font-black text-slate-900 tracking-tight">정산 내역</h2>
+          <p className="text-sm font-medium text-slate-500 uppercase tracking-widest flex items-center gap-2">
+            <FileText className="w-3.5 h-3.5" /> Payout Administration
+          </p>
+        </div>
+        <div className="flex items-center gap-3">
+          <input
+            type="month"
+            value={month}
+            onChange={(e) => setMonth(e.target.value)}
+            className="bg-white border border-slate-200 px-4 py-2 rounded-xl text-sm font-bold text-slate-700 focus:outline-none focus:ring-4 focus:ring-slate-100 transition-all"
+          />
+          <button className="flex items-center gap-2 px-5 py-2 bg-slate-900 text-white rounded-xl text-sm font-bold hover:bg-slate-800 transition-all shadow-lg shadow-slate-200">
+            <Download className="w-4 h-4" /> PDF 내보내기
+          </button>
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-4">
-        <div className="bg-white rounded-xl border border-gray-100 p-4"><p className="text-[12px] text-gray-400 font-medium">총 매출</p><p className="text-xl font-bold text-gray-900 mt-1">₩{totalSales.toLocaleString()}</p></div>
-        <div className="bg-white rounded-xl border border-gray-100 p-4"><p className="text-[12px] text-gray-400 font-medium">총 지급액</p><p className="text-xl font-bold text-primary-600 mt-1">₩{totalPayout.toLocaleString()}</p></div>
-        <div className="bg-white rounded-xl border border-gray-100 p-4"><p className="text-[12px] text-gray-400 font-medium">정산 대상</p><p className="text-xl font-bold text-gray-900 mt-1">{settlements.length}명</p></div>
+      {/* Summary Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="bg-white border border-slate-200 p-8 rounded-2xl shadow-sm space-y-4">
+          <p className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">Total Service Sales</p>
+          <p className="text-3xl font-black text-slate-900 tabular-nums">₩{totalSales.toLocaleString()}</p>
+          <div className="h-1 w-full bg-slate-50 rounded-full overflow-hidden">
+            <div className="bg-slate-900 h-full w-[85%]" />
+          </div>
+        </div>
+        <div className="bg-slate-900 border border-slate-800 p-8 rounded-2xl shadow-xl space-y-4 text-white">
+          <p className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">Total Payout Amount</p>
+          <p className="text-3xl font-black tabular-nums">₩{totalPayout.toLocaleString()}</p>
+          <div className="flex items-center gap-2">
+            <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Awaiting Transfer</span>
+          </div>
+        </div>
+        <div className="bg-white border border-slate-200 p-8 rounded-2xl shadow-sm space-y-4">
+          <p className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">Active Stylists</p>
+          <p className="text-3xl font-black text-slate-900 tabular-nums">{settlements.length} Members</p>
+          <div className="flex -space-x-2">
+            {staffList.slice(0, 5).map(s => (
+              <div key={s.id} className="w-7 h-7 rounded-full border-2 border-white bg-slate-100" style={{ backgroundColor: s.profileColor }} />
+            ))}
+          </div>
+        </div>
       </div>
 
-      <div className="bg-white rounded-xl border border-gray-100 p-5">
-        <h3 className="text-[15px] font-bold text-gray-800 mb-4">직원별 매출 vs 지급액</h3>
-        <ResponsiveContainer width="100%" height={200}>
-          <BarChart data={chart}>
-            <XAxis dataKey="name" tick={{ fontSize: 12 }} axisLine={false} tickLine={false} />
-            <YAxis tickFormatter={(v: number) => `${(v/10000).toFixed(0)}만`} tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
-            <Tooltip formatter={(v: unknown) => [`₩${Number(v).toLocaleString()}`, '']} contentStyle={{ fontSize: 12, borderRadius: 8, border: '1px solid #e5e7eb' }} />
-            <Bar dataKey="매출" fill="#e0e7ff" radius={[4,4,0,0]} />
-            <Bar dataKey="지급액" fill="#6366f1" radius={[4,4,0,0]} />
-          </BarChart>
-        </ResponsiveContainer>
-      </div>
-
-      <div className="space-y-3">
+      {/* Detailed Settlement List */}
+      <div className="space-y-4">
+        <div className="px-2">
+          <h3 className="text-xs font-black text-slate-400 uppercase tracking-[0.3em] italic text-center leading-none">Individual Payout Breakdown</h3>
+        </div>
+        
         {settlements.map((st) => {
           const staff = staffList.find((s) => s.id === st.staffId);
-          const open = expandedId === st.staffId;
+          const isExpanded = expandedId === st.staffId;
+
           return (
-            <div key={st.staffId} className="bg-white rounded-xl border border-gray-100 overflow-hidden">
-              <button onClick={() => setExpandedId(open ? null : st.staffId)} className="w-full flex items-center gap-4 p-4 hover:bg-gray-50 transition-colors">
-                <div className="w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold" style={{ backgroundColor: staff?.profileColor }}>{st.staffName[0]}</div>
-                <div className="flex-1 text-left">
-                  <p className="text-[14px] font-bold text-gray-800">{st.staffName}</p>
-                  <p className="text-[12px] text-gray-400">{staff?.settlementType === 'fixed_plus_incentive' ? '고정급+인센티브' : staff?.settlementType === 'incentive_only' ? '순수 인센티브' : '면대여'}</p>
+            <div key={st.staffId} className={`group bg-white border rounded-2xl transition-all duration-300 overflow-hidden ${isExpanded ? 'border-slate-900 shadow-xl' : 'border-slate-200 shadow-sm hover:border-slate-400'}`}>
+              <button
+                onClick={() => setExpandedId(isExpanded ? null : st.staffId)}
+                className="w-full flex items-center gap-6 p-6 text-left"
+              >
+                <div className="w-12 h-12 rounded-xl flex items-center justify-center text-white text-base font-black shadow-lg" style={{ backgroundColor: staff?.profileColor }}>
+                  {st.staffName[0]}
                 </div>
-                <div className="text-right mr-2"><p className="text-[12px] text-gray-400">매출</p><p className="text-[14px] font-bold text-gray-700">₩{st.totalSales.toLocaleString()}</p></div>
-                <div className="text-right mr-2"><p className="text-[12px] text-gray-400">지급액</p><p className="text-[14px] font-bold text-primary-600">₩{st.netAmount.toLocaleString()}</p></div>
-                {open ? <ChevronUp className="w-4 h-4 text-gray-400" /> : <ChevronDown className="w-4 h-4 text-gray-400" />}
+                <div className="flex-1">
+                  <p className="text-[16px] font-black text-slate-900 tracking-tight">{st.staffName}</p>
+                  <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">
+                    {staff?.settlementType.replace(/_/g, ' ')}
+                  </p>
+                </div>
+                <div className="text-right px-6 border-r border-slate-100 hidden md:block">
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Sales</p>
+                  <p className="text-sm font-bold text-slate-900 tabular-nums">₩{st.totalSales.toLocaleString()}</p>
+                </div>
+                <div className="text-right px-6">
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Net Payout</p>
+                  <p className="text-lg font-black text-slate-900 tabular-nums leading-none">₩{st.netAmount.toLocaleString()}</p>
+                </div>
+                <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all ${isExpanded ? 'bg-slate-900 text-white rotate-180' : 'bg-slate-50 text-slate-400 group-hover:bg-slate-100'}`}>
+                  <ChevronDown className="w-4 h-4" />
+                </div>
               </button>
-              {open && (
-                <div className="px-4 pb-4 border-t border-gray-100 mt-0 space-y-4 pt-4">
-                  <div><h4 className="text-[12px] font-bold text-gray-500 mb-2">시술별 매출</h4>
-                    <div className="bg-gray-50 rounded-lg p-3 space-y-2">
-                      {Object.entries(st.serviceSales).map(([cat, raw]) => {
-                        const amount = raw as number;
-                        const rate = staff?.incentiveRates[cat] || 0;
-                        const inc = Math.round(amount * rate / 100);
-                        const cnt = st.serviceCount[cat] || 0;
-                        return (<div key={cat} className="flex items-center text-[12px]"><span className="w-16 text-gray-600 font-medium">{cat}</span><span className="w-12 text-gray-400 text-right">{cnt}건</span><span className="flex-1 text-right text-gray-700">₩{amount.toLocaleString()}</span><span className="w-12 text-center text-gray-400">x{rate}%</span><span className="w-28 text-right font-semibold text-primary-600">₩{inc.toLocaleString()}</span></div>);
-                      })}
+
+              {isExpanded && (
+                <div className="p-8 pt-0 border-t border-slate-50 animate-in fade-in slide-in-from-top-2 duration-300">
+                  <div className="grid lg:grid-cols-2 gap-12 mt-8">
+                    {/* Categories */}
+                    <div className="space-y-6">
+                      <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4">Service Performance</h4>
+                      <div className="space-y-2">
+                        {Object.entries(st.serviceSales).map(([cat, amount]) => {
+                          const rate = staff?.incentiveRates[cat] || 0;
+                          const incentive = Math.round(amount * rate / 100);
+                          return (
+                            <div key={cat} className="flex items-center justify-between p-4 bg-slate-50 rounded-xl hover:bg-slate-100 transition-colors">
+                              <span className="text-sm font-bold text-slate-700">{cat}</span>
+                              <div className="flex items-center gap-8">
+                                <div className="text-right">
+                                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Rate {rate}%</p>
+                                  <p className="text-sm font-black text-slate-900 tabular-nums">₩{incentive.toLocaleString()}</p>
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
                     </div>
-                  </div>
-                  <div className="bg-primary-50 rounded-lg p-3 space-y-1.5">
-                    {staff?.baseSalary ? <R label="기본급" value={st.baseSalary} /> : null}
-                    <R label="인센티브 합계" value={st.incentiveAmount} />
-                    {st.deductions > 0 && <R label="4대보험 공제" value={-st.deductions} neg />}
-                    <div className="border-t border-primary-200 pt-1.5 flex items-center justify-between text-[13px]"><span className="font-bold text-gray-800">최종 지급액</span><span className="font-bold text-primary-700 text-[15px]">₩{st.netAmount.toLocaleString()}</span></div>
+
+                    {/* Accounting */}
+                    <div className="space-y-6">
+                      <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4">Final Accounting</h4>
+                      <div className="bg-slate-900 rounded-2xl p-6 text-white space-y-4 shadow-xl">
+                        <div className="flex justify-between text-slate-400 text-xs font-bold">
+                          <span>Total Incentive</span>
+                          <span className="tabular-nums">₩{st.incentiveAmount.toLocaleString()}</span>
+                        </div>
+                        {staff?.baseSalary ? (
+                          <div className="flex justify-between text-slate-400 text-xs font-bold">
+                            <span>Base Salary</span>
+                            <span className="tabular-nums">₩{st.baseSalary.toLocaleString()}</span>
+                          </div>
+                        ) : null}
+                        <div className="flex justify-between text-red-400 text-xs font-bold">
+                          <span>Deductions</span>
+                          <span className="tabular-nums">- ₩{st.deductions.toLocaleString()}</span>
+                        </div>
+                        <div className="pt-4 border-t border-slate-800 flex justify-between items-end">
+                          <div>
+                            <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Final Payment</p>
+                            <p className="text-2xl font-black tabular-nums tracking-tighter">₩{st.netAmount.toLocaleString()}</p>
+                          </div>
+                          <button className="px-4 py-2 bg-white text-slate-900 rounded-lg text-[11px] font-black uppercase tracking-widest shadow-sm hover:bg-slate-100">Confirm Transfer</button>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               )}
@@ -83,8 +160,4 @@ export default function Settlement() {
       </div>
     </div>
   );
-}
-
-function R({ label, value, neg }: { label: string; value: number; neg?: boolean }) {
-  return <div className="flex items-center justify-between text-[12px]"><span className="text-gray-600">{label}</span><span className={`font-semibold ${neg ? 'text-red-500' : 'text-gray-700'}`}>{neg ? '-' : ''}₩{Math.abs(value).toLocaleString()}</span></div>;
 }
