@@ -1,134 +1,146 @@
-import { CalendarDays, Plus } from 'lucide-react';
+import { CalendarDays, CheckCircle2, Clock, TrendingUp } from 'lucide-react';
 import { useStore } from '../store';
-import { staffList, getDailySales } from '../data/mock';
-import { AreaChart, Area, Tooltip, ResponsiveContainer } from 'recharts';
+import { staffList, getDailySales, statusLabels, statusColors, channelLabels } from '../data/mock';
+import { AreaChart, Area, XAxis, Tooltip, ResponsiveContainer } from 'recharts';
 
 export default function Dashboard() {
   const { bookings, selectedDate } = useStore();
   const todayBookings = bookings.filter((b) => b.date === selectedDate);
   const completed = todayBookings.filter((b) => b.status === 'completed');
+  const confirmed = todayBookings.filter((b) => b.status === 'confirmed');
+  const pending = todayBookings.filter((b) => b.status === 'pending');
   const todayRevenue = completed.reduce((s, b) => s + b.totalPrice, 0);
   const dailySales = getDailySales().slice(-7);
 
-  const upcomingBookings = todayBookings
+  const upcoming = todayBookings
     .filter((b) => b.status === 'confirmed' || b.status === 'pending')
     .sort((a, b) => a.startTime.localeCompare(b.startTime));
 
   return (
-    <div className="space-y-12">
-      {/* Editorial Header */}
-      <header className="flex flex-col md:flex-row md:items-end justify-between gap-8 border-b border-gray-100 pb-12">
-        <div className="space-y-2">
-          <h2 className="text-[56px] font-black text-gray-900 tracking-[calc(-0.05em)] leading-none italic">
-            Dashboard
-          </h2>
-          <p className="text-[16px] text-gray-400 font-bold uppercase tracking-[0.2em] ml-1">
-            Overview / April 06, 2026
-          </p>
-        </div>
-        <div className="flex -space-x-3">
-          {staffList.map((s) => (
-            <div key={s.id} className="w-12 h-12 rounded-full border-4 border-[#fdfcfb] bg-gray-200 flex items-center justify-center text-[12px] font-black text-white shadow-sm" style={{ backgroundColor: s.profileColor }}>
-              {s.name[0]}
-            </div>
-          ))}
-          <div className="w-12 h-12 rounded-full border-4 border-[#fdfcfb] bg-gray-100 flex items-center justify-center text-[12px] font-black text-gray-400">
-            +
-          </div>
-        </div>
-      </header>
+    <div className="space-y-6 max-w-[1200px]">
+      <div>
+        <h2 className="text-xl font-bold text-gray-900">대시보드</h2>
+        <p className="text-sm text-gray-500 mt-0.5">2026년 4월 6일 월요일</p>
+      </div>
 
-      {/* Bento Grid Layout */}
-      <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
-        {/* Main Large Metric */}
-        <div className="md:col-span-8 bg-white rounded-[48px] p-12 shadow-elegant border border-white relative overflow-hidden group">
-          <div className="relative z-10">
-            <p className="text-[14px] font-black text-gray-400 uppercase tracking-widest mb-4">Total Revenue Today</p>
-            <h3 className="text-[84px] font-black text-gray-900 tracking-tighter tabular-nums leading-none">
-              ₩{todayRevenue.toLocaleString()}
-            </h3>
-            <div className="mt-8 flex items-center gap-4">
-              <span className="px-4 py-2 bg-emerald-50 text-emerald-600 rounded-full text-[13px] font-black shadow-sm">+12.5% vs yesterday</span>
-              <span className="text-gray-300 font-bold">Based on {completed.length} completed services</span>
-            </div>
-          </div>
-          <div className="absolute top-0 right-0 w-64 h-64 bg-gray-50 rounded-full -translate-y-1/2 translate-x-1/2 group-hover:scale-110 transition-transform duration-700" />
-        </div>
+      {/* Summary Cards */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <Card icon={CalendarDays} label="오늘 예약" value={`${todayBookings.length}건`} cls="bg-primary-50 text-primary-600" />
+        <Card icon={CheckCircle2} label="완료" value={`${completed.length}건`} cls="bg-emerald-50 text-emerald-600" />
+        <Card icon={Clock} label="대기/확정" value={`${confirmed.length + pending.length}건`} cls="bg-blue-50 text-blue-600" />
+        <Card icon={TrendingUp} label="오늘 매출" value={`₩${todayRevenue.toLocaleString()}`} cls="bg-amber-50 text-amber-600" />
+      </div>
 
-        {/* Counter Metric */}
-        <div className="md:col-span-4 bg-gray-900 rounded-[48px] p-10 text-white shadow-floating relative flex flex-col justify-between">
-          <div className="flex justify-between items-start">
-            <CalendarDays className="w-8 h-8 text-white/30" />
-            <span className="text-[12px] font-black text-white/40 uppercase tracking-widest">Bookings</span>
-          </div>
-          <div>
-            <p className="text-[64px] font-black leading-none tabular-nums">{todayBookings.length}</p>
-            <p className="text-[14px] font-bold text-white/50 mt-2 uppercase tracking-widest">Total Appointments</p>
+      <div className="grid lg:grid-cols-3 gap-4">
+        {/* Upcoming */}
+        <div className="lg:col-span-2 bg-white rounded-xl border border-gray-100 p-5">
+          <h3 className="text-[15px] font-bold text-gray-800 mb-4">다음 예약</h3>
+          <div className="space-y-2">
+            {upcoming.length === 0 ? (
+              <p className="text-sm text-gray-400 py-8 text-center">남은 예약이 없습니다</p>
+            ) : upcoming.map((b) => {
+              const staff = staffList.find((s) => s.id === b.staffId);
+              return (
+                <div key={b.id} className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors">
+                  <div className="w-1 h-10 rounded-full shrink-0" style={{ backgroundColor: staff?.profileColor }} />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[13px] font-semibold text-gray-800">{b.customerName}</span>
+                      <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${statusColors[b.status]}`}>{statusLabels[b.status]}</span>
+                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-gray-100 text-gray-500">{channelLabels[b.channel]}</span>
+                    </div>
+                    <p className="text-[12px] text-gray-500 mt-0.5 truncate">{b.services.map((s) => s.name).join(', ')}</p>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <p className="text-[13px] font-bold text-gray-700">{b.startTime}~{b.endTime}</p>
+                    <p className="text-[12px] text-gray-400">{b.staffName}</p>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
 
-        {/* Chart Card */}
-        <div className="md:col-span-5 bg-white rounded-[48px] p-10 shadow-elegant border border-white flex flex-col justify-between h-[420px]">
-          <div>
-            <h4 className="text-[20px] font-black text-gray-900 tracking-tight">Weekly Performance</h4>
-            <p className="text-[13px] font-bold text-gray-400 mt-1">Consistency is the key to growth</p>
-          </div>
-          <div className="flex-1 mt-8 -mx-4">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={dailySales} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
+        <div className="space-y-4">
+          {/* Chart */}
+          <div className="bg-white rounded-xl border border-gray-100 p-5">
+            <h3 className="text-[15px] font-bold text-gray-800 mb-3">주간 매출 추이</h3>
+            <ResponsiveContainer width="100%" height={130}>
+              <AreaChart data={dailySales}>
                 <defs>
-                  <linearGradient id="colorSales" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#1a1a1a" stopOpacity={0.08} />
-                    <stop offset="95%" stopColor="#1a1a1a" stopOpacity={0} />
+                  <linearGradient id="cG" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#6366f1" stopOpacity={0.15} />
+                    <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
                   </linearGradient>
                 </defs>
-                <Area type="monotone" dataKey="total" stroke="#1a1a1a" strokeWidth={4} fill="url(#colorSales)" />
-                <Tooltip 
-                  cursor={{ stroke: '#f1f5f9', strokeWidth: 2 }}
-                  content={({ active, payload }) => {
-                    if (active && payload && payload.length) return (
-                      <div className="bg-gray-900 text-white px-4 py-2 rounded-2xl text-[12px] font-black shadow-xl">
-                        ₩{Number(payload[0].value).toLocaleString()}
-                      </div>
-                    );
-                    return null;
-                  }}
+                <XAxis dataKey="date" tickFormatter={(v: string) => v.slice(8)} tick={{ fontSize: 11 }} axisLine={false} tickLine={false} />
+                <Tooltip
+                  formatter={(v: unknown) => [`₩${Number(v).toLocaleString()}`, '매출']}
+                  labelFormatter={(l: unknown) => String(l)}
+                  contentStyle={{ fontSize: 12, borderRadius: 8, border: '1px solid #e5e7eb' }}
                 />
+                <Area type="monotone" dataKey="total" stroke="#6366f1" strokeWidth={2} fill="url(#cG)" />
               </AreaChart>
             </ResponsiveContainer>
           </div>
-        </div>
 
-        {/* Schedule Card */}
-        <div className="md:col-span-7 bg-white rounded-[48px] p-10 shadow-elegant border border-white h-[420px] flex flex-col">
-          <div className="flex items-center justify-between mb-8">
-            <h4 className="text-[20px] font-black text-gray-900 tracking-tight">Upcoming Schedule</h4>
-            <button className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center hover:bg-gray-100 transition-colors">
-              <Plus className="w-5 h-5 text-gray-400" />
-            </button>
-          </div>
-          <div className="flex-1 overflow-y-auto space-y-4 pr-2">
-            {upcomingBookings.slice(0, 4).map((b) => (
-              <div key={b.id} className="flex items-center gap-6 group cursor-pointer">
-                <div className="w-16 text-[14px] font-black text-gray-900 tabular-nums">{b.startTime}</div>
-                <div className="flex-1 bg-gray-50 group-hover:bg-gray-100/80 transition-all rounded-[24px] px-6 py-4 flex items-center justify-between">
-                  <div>
-                    <p className="text-[15px] font-black text-gray-900">{b.customerName}</p>
-                    <p className="text-[12px] font-bold text-gray-400 mt-0.5">{b.services[0].name}</p>
+          {/* Staff */}
+          <div className="bg-white rounded-xl border border-gray-100 p-5">
+            <h3 className="text-[15px] font-bold text-gray-800 mb-3">직원별 오늘 예약</h3>
+            <div className="space-y-2.5">
+              {staffList.map((s) => {
+                const cnt = todayBookings.filter((b) => b.staffId === s.id && b.status !== 'cancelled').length;
+                return (
+                  <div key={s.id} className="flex items-center gap-2.5">
+                    <div className="w-7 h-7 rounded-full flex items-center justify-center text-white text-[11px] font-bold" style={{ backgroundColor: s.profileColor }}>{s.name[0]}</div>
+                    <span className="text-[13px] text-gray-700 flex-1">{s.name}</span>
+                    <span className="text-[13px] font-bold text-gray-800">{cnt}건</span>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <span className="text-[11px] font-black text-gray-400 uppercase tracking-widest">{b.staffName}</span>
-                    <div className="w-2 h-2 rounded-full bg-accent" />
-                  </div>
-                </div>
-              </div>
-            ))}
-            {upcomingBookings.length === 0 && (
-              <p className="text-center text-gray-300 font-bold py-20">No more appointments for today</p>
-            )}
+                );
+              })}
+            </div>
           </div>
         </div>
       </div>
+
+      {/* Full Table */}
+      <div className="bg-white rounded-xl border border-gray-100 p-5">
+        <h3 className="text-[15px] font-bold text-gray-800 mb-4">오늘 전체 예약 ({todayBookings.length}건)</h3>
+        <div className="overflow-x-auto">
+          <table className="w-full text-left">
+            <thead>
+              <tr className="border-b border-gray-100">
+                {['시간', '고객', '서비스', '담당', '채널', '금액', '상태'].map((h) => (
+                  <th key={h} className="pb-2.5 text-[12px] font-semibold text-gray-400 whitespace-nowrap pr-4">{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {[...todayBookings].sort((a, b) => a.startTime.localeCompare(b.startTime)).map((b) => (
+                <tr key={b.id} className="border-b border-gray-50 hover:bg-gray-50">
+                  <td className="py-2.5 text-[13px] text-gray-700 pr-4 whitespace-nowrap">{b.startTime}~{b.endTime}</td>
+                  <td className="py-2.5 text-[13px] font-medium text-gray-800 pr-4 whitespace-nowrap">{b.customerName}</td>
+                  <td className="py-2.5 text-[13px] text-gray-600 pr-4">{b.services.map((s) => s.name).join(', ')}</td>
+                  <td className="py-2.5 text-[13px] text-gray-600 pr-4 whitespace-nowrap">{b.staffName}</td>
+                  <td className="py-2.5 pr-4"><span className="text-[11px] px-1.5 py-0.5 rounded bg-gray-100 text-gray-500">{channelLabels[b.channel]}</span></td>
+                  <td className="py-2.5 text-[13px] font-semibold text-gray-700 pr-4 whitespace-nowrap">₩{b.totalPrice.toLocaleString()}</td>
+                  <td className="py-2.5"><span className={`text-[11px] px-2 py-0.5 rounded-full font-medium ${statusColors[b.status]}`}>{statusLabels[b.status]}</span></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Card({ icon: Icon, label, value, cls }: { icon: any; label: string; value: string; cls: string }) {
+  return (
+    <div className="bg-white rounded-xl border border-gray-100 p-4">
+      <div className={`w-9 h-9 rounded-lg ${cls} flex items-center justify-center mb-3`}><Icon className="w-[18px] h-[18px]" /></div>
+      <p className="text-[12px] text-gray-400 font-medium">{label}</p>
+      <p className="text-lg font-bold text-gray-900 mt-0.5">{value}</p>
     </div>
   );
 }

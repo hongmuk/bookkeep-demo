@@ -21,91 +21,71 @@ export default function Layout() {
   const { sidebarOpen, setSidebarOpen } = useStore();
 
   return (
-    <div className="flex h-screen overflow-hidden bg-[#fdfcfb]">
-      {/* Overlay for mobile */}
+    <div className="flex h-screen overflow-hidden bg-[#f4f4f7]">
       {sidebarOpen && (
-        <div className="fixed inset-0 bg-gray-900/5 backdrop-blur-sm z-40 lg:hidden" onClick={() => setSidebarOpen(false)} />
+        <div className="fixed inset-0 bg-black/30 z-40 lg:hidden" onClick={() => setSidebarOpen(false)} />
       )}
 
-      {/* Floating Minimal Sidebar */}
       <aside className={`
         fixed lg:static inset-y-0 left-0 z-50
-        m-4 lg:m-6 w-72 bg-white/70 backdrop-blur-xl border border-white/40
-        rounded-[32px] flex flex-col transition-all duration-500 ease-[cubic-bezier(0.23,1,0.32,1)]
-        shadow-floating
-        ${sidebarOpen ? 'translate-x-0' : '-translate-x-[calc(100%+40px)] lg:translate-x-0'}
+        w-[260px] bg-white border-r border-gray-100
+        flex flex-col shrink-0 transition-transform duration-300
+        ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
       `}>
-        <div className="flex items-center gap-3 px-8 py-10">
-          <div className="w-12 h-12 rounded-[18px] bg-gray-900 flex items-center justify-center shadow-lg group">
-            <CalendarDays className="w-6 h-6 text-white group-hover:scale-110 transition-transform" />
+        <div className="flex items-center gap-3 px-5 h-16 border-b border-gray-100">
+          <div className="w-8 h-8 rounded-lg bg-primary-600 flex items-center justify-center">
+            <CalendarDays className="w-4 h-4 text-white" />
           </div>
-          <div>
-            <h1 className="text-[18px] font-black text-gray-900 tracking-tighter leading-tight">BOOK<br/>KEEP</h1>
+          <div className="leading-tight">
+            <p className="text-sm font-bold text-gray-900">BookKeep</p>
+            <p className="text-[10px] text-gray-400">{shop.name}</p>
           </div>
-          <button className="ml-auto lg:hidden p-2 bg-gray-50 rounded-full" onClick={() => setSidebarOpen(false)}>
-            <X className="w-4 h-4 text-gray-400" />
+          <button className="ml-auto lg:hidden" onClick={() => setSidebarOpen(false)}>
+            <X className="w-5 h-5 text-gray-400" />
           </button>
         </div>
 
-        <nav className="flex-1 px-4 space-y-1.5 overflow-y-auto mt-2">
+        <nav className="flex-1 p-3 space-y-0.5 overflow-y-auto">
           {navItems.map(({ to, icon: Icon, label }) => (
             <NavLink
               key={to}
               to={to}
               onClick={() => setSidebarOpen(false)}
               className={({ isActive }) =>
-                `flex items-center gap-4 px-6 py-4 rounded-[22px] text-[15px] font-bold transition-all duration-300
+                `flex items-center gap-3 px-3 py-2.5 rounded-lg text-[13px] font-medium transition-colors
                 ${isActive
-                  ? 'bg-gray-900 text-white shadow-xl shadow-gray-200 translate-x-1'
-                  : 'text-gray-400 hover:text-gray-900 hover:bg-gray-50/50'
+                  ? 'bg-primary-50 text-primary-700 font-semibold'
+                  : 'text-gray-500 hover:bg-gray-50 hover:text-gray-700'
                 }`
               }
             >
-              <Icon className="w-[20px] h-[20px]" />
+              <Icon className="w-[18px] h-[18px]" />
               {label}
             </NavLink>
           ))}
         </nav>
 
-        <div className="p-6 m-4 rounded-[26px] bg-gray-50/50 border border-white/50">
-          <div className="flex items-center gap-4">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-gray-200 to-gray-100 flex items-center justify-center text-[13px] font-black text-gray-500 shadow-inner">
-              K
+        <div className="p-3 border-t border-gray-100">
+          <div className="flex items-center gap-3 px-3 py-2">
+            <div className="w-8 h-8 rounded-full bg-primary-100 text-primary-700 flex items-center justify-center text-xs font-bold">김</div>
+            <div>
+              <p className="text-[13px] font-semibold text-gray-800">김수현</p>
+              <p className="text-[10px] text-gray-400">원장</p>
             </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-[14px] font-black text-gray-900 truncate">김수현</p>
-              <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">Master</p>
-            </div>
-            <button className="w-8 h-8 flex items-center justify-center bg-white rounded-full text-gray-400 shadow-sm border border-gray-100/50 hover:text-gray-900 transition-colors">
-              <Settings className="w-4 h-4" />
-            </button>
           </div>
         </div>
       </aside>
 
-      {/* Main Surface */}
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
-        {/* Transparent Header for Mobile */}
-        <header className="lg:hidden flex items-center justify-between px-8 py-6 bg-transparent">
-          <button onClick={() => setSidebarOpen(true)} className="w-12 h-12 flex items-center justify-center bg-white rounded-2xl shadow-sm border border-gray-100/50">
-            <Menu className="w-6 h-6 text-gray-900" />
+      <div className="flex-1 flex flex-col min-w-0">
+        <header className="lg:hidden flex items-center gap-3 h-14 px-4 bg-white border-b border-gray-100">
+          <button onClick={() => setSidebarOpen(true)}>
+            <Menu className="w-5 h-5 text-gray-600" />
           </button>
-          <span className="text-[16px] font-black text-gray-900 tracking-tighter uppercase">{shop.name}</span>
+          <span className="text-sm font-bold text-gray-800">BookKeep</span>
         </header>
 
-        {/* Global Search or Utility (Hidden for now, but planned for editorial feel) */}
-        <div className="absolute top-8 right-12 hidden lg:flex items-center gap-6 z-10">
-          <div className="flex items-center gap-2 px-4 py-2 bg-white/50 backdrop-blur-md rounded-full border border-white/40 shadow-elegant">
-            <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="text-[12px] font-black text-gray-500 tabular-nums">LIVE UPDATES</span>
-          </div>
-        </div>
-
-        {/* Content Canvas */}
-        <main className="flex-1 overflow-y-auto px-6 lg:px-12 py-8 lg:py-12 page-transition">
-          <div className="max-w-[1500px] mx-auto pb-20">
-            <Outlet />
-          </div>
+        <main className="flex-1 overflow-y-auto p-4 lg:p-6">
+          <Outlet />
         </main>
       </div>
     </div>
