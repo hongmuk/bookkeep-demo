@@ -3,118 +3,140 @@ import { Plus, Phone, Shield, Scissors } from 'lucide-react';
 import { staffList } from '../data/mock';
 
 export default function Staff() {
-  const [selected, setSelected] = useState<string | null>(null);
+  const [selected, setSelected] = useState<string | null>(staffList[0].id);
   const staff = selected ? staffList.find((s) => s.id === selected) : null;
 
-  const roleLabels: Record<string, string> = { owner: '원장', manager: '매니저', staff: '디자이너' };
+  const roleLabels: Record<string, string> = { owner: 'Master', manager: 'Manager', staff: 'Stylist' };
   const settlementLabels: Record<string, string> = {
-    fixed_plus_incentive: '고정급 + 인센티브',
-    incentive_only: '순수 인센티브',
-    booth_rental: '면대여 (부스렌탈)',
+    fixed_plus_incentive: 'Fixed + Incentive',
+    incentive_only: 'Performance Based',
+    booth_rental: 'Booth Rental',
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 className="text-xl font-bold text-gray-900">직원관리</h2>
-        <button className="flex items-center gap-1.5 px-4 py-2 bg-primary-600 text-white rounded-lg text-[13px] font-semibold hover:bg-primary-700">
-          <Plus className="w-4 h-4" /> 직원 초대
+    <div className="space-y-12">
+      {/* Editorial Header */}
+      <header className="flex flex-col md:flex-row md:items-end justify-between gap-8 border-b border-gray-100 pb-12">
+        <div className="space-y-2">
+          <h2 className="text-[56px] font-black text-gray-900 tracking-[calc(-0.05em)] leading-none italic">
+            Team
+          </h2>
+          <p className="text-[16px] text-gray-400 font-bold uppercase tracking-[0.2em] ml-1">
+            Directory / {staffList.length} Professionals
+          </p>
+        </div>
+        <button className="flex items-center gap-2 px-8 py-4 bg-gray-900 text-white rounded-[24px] text-[13px] font-black uppercase tracking-[0.1em] hover:bg-accent transition-all shadow-floating active:scale-95">
+          <Plus className="w-4 h-4" /> Recruit Staff
         </button>
-      </div>
+      </header>
 
-      <div className="grid lg:grid-cols-3 gap-4 lg:gap-6">
-        {/* Staff List */}
-        <div className="lg:col-span-1 space-y-2">
-          {staffList.map((s) => (
-            <button
-              key={s.id}
-              onClick={() => setSelected(s.id)}
-              className={`w-full flex items-center gap-3 p-3.5 rounded-xl border transition-colors text-left
-                ${selected === s.id ? 'bg-primary-50 border-primary-200' : 'bg-white border-gray-200 hover:bg-gray-50'}`}
-            >
-              <div className="w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold" style={{ backgroundColor: s.profileColor }}>
-                {s.name[0]}
-              </div>
-              <div className="flex-1">
-                <div className="flex items-center gap-2">
-                  <span className="text-[14px] font-bold text-gray-800">{s.name}</span>
-                  {s.role === 'owner' && <Shield className="w-3.5 h-3.5 text-primary-500" />}
+      <div className="grid lg:grid-cols-12 gap-12">
+        {/* Staff List (Minimal Side) */}
+        <div className="lg:col-span-4 space-y-4">
+          <p className="text-[11px] font-black text-gray-400 uppercase tracking-widest px-4 mb-4 italic">Active Members</p>
+          <div className="space-y-3">
+            {staffList.map((s) => (
+              <button
+                key={s.id}
+                onClick={() => setSelected(s.id)}
+                className={`w-full group flex items-center gap-5 p-6 rounded-[32px] transition-all duration-500
+                  ${selected === s.id 
+                    ? 'bg-gray-900 text-white shadow-floating translate-x-2' 
+                    : 'bg-white border border-white hover:bg-gray-50/50 hover:shadow-elegant'}`}
+              >
+                <div className="w-14 h-14 rounded-[22px] flex items-center justify-center text-[18px] font-black shadow-lg" style={{ backgroundColor: s.profileColor }}>
+                  {s.name[0]}
                 </div>
-                <p className="text-[12px] text-gray-400">{roleLabels[s.role]}</p>
-              </div>
-              <div className={`w-2 h-2 rounded-full ${s.isActive ? 'bg-green-400' : 'bg-gray-300'}`} />
-            </button>
-          ))}
+                <div className="flex-1 text-left">
+                  <div className="flex items-center gap-2">
+                    <span className={`text-[17px] font-black tracking-tight ${selected === s.id ? 'text-white' : 'text-gray-900'}`}>{s.name}</span>
+                    <div className={`w-1.5 h-1.5 rounded-full ${s.isActive ? 'bg-emerald-500' : 'bg-gray-300'}`} />
+                  </div>
+                  <p className={`text-[11px] font-bold uppercase tracking-widest mt-1 ${selected === s.id ? 'text-white/40' : 'text-gray-400'}`}>{roleLabels[s.role]}</p>
+                </div>
+              </button>
+            ))}
+          </div>
         </div>
 
-        {/* Staff Detail */}
-        <div className="lg:col-span-2">
+        {/* Staff Detail (Editorial Surface) */}
+        <div className="lg:col-span-8">
           {staff ? (
-            <div className="bg-white rounded-xl border border-gray-200 p-5 space-y-5">
-              {/* Profile */}
-              <div className="flex items-center gap-4">
-                <div className="w-16 h-16 rounded-full flex items-center justify-center text-white text-xl font-bold" style={{ backgroundColor: staff.profileColor }}>
+            <div className="bg-white rounded-[64px] shadow-floating border border-white p-12 lg:p-16 space-y-16 animate-in fade-in slide-in-from-bottom-4 duration-700">
+              {/* Profile Header */}
+              <div className="flex flex-col md:flex-row gap-12 items-start md:items-center border-b border-gray-50 pb-16">
+                <div className="w-40 h-40 rounded-[56px] bg-gray-50 border-8 border-white shadow-elegant flex items-center justify-center text-[56px] font-black text-white" style={{ backgroundColor: staff.profileColor }}>
                   {staff.name[0]}
                 </div>
-                <div>
-                  <h3 className="text-[18px] font-bold text-gray-900">{staff.name}</h3>
-                  <div className="flex items-center gap-3 mt-1">
-                    <span className="text-[12px] px-2 py-0.5 rounded-full bg-primary-50 text-primary-600 font-medium">
-                      {roleLabels[staff.role]}
-                    </span>
-                    <span className="flex items-center gap-1 text-[12px] text-gray-500">
-                      <Phone className="w-3 h-3" /> {staff.phone}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Settlement Settings */}
-              <div>
-                <h4 className="text-[14px] font-bold text-gray-800 mb-3 flex items-center gap-2">
-                  <Scissors className="w-4 h-4 text-primary-500" /> 정산 설정
-                </h4>
-                <div className="bg-gray-50 rounded-lg p-4 space-y-3">
-                  <InfoRow label="정산 유형" value={settlementLabels[staff.settlementType]} />
-                  {staff.baseSalary > 0 && (
-                    <InfoRow label="기본급" value={`₩${staff.baseSalary.toLocaleString()}`} />
-                  )}
+                <div className="space-y-6">
                   <div>
-                    <p className="text-[12px] font-semibold text-gray-500 mb-2">인센티브 비율</p>
-                    <div className="grid grid-cols-2 lg:grid-cols-3 gap-2">
-                      {Object.entries(staff.incentiveRates).map(([cat, rate]) => (
-                        <div key={cat} className="flex items-center justify-between bg-white rounded-lg px-3 py-2 border border-gray-100">
-                          <span className="text-[12px] text-gray-600">{cat}</span>
-                          <span className="text-[13px] font-bold text-primary-600">{rate}%</span>
-                        </div>
-                      ))}
+                    <h3 className="text-[56px] font-black text-gray-900 tracking-tighter leading-none">{staff.name}</h3>
+                    <div className="flex items-center gap-4 mt-3">
+                      <span className="px-4 py-1.5 bg-gray-900 text-white rounded-full text-[11px] font-black uppercase tracking-[0.2em]">
+                        {roleLabels[staff.role]}
+                      </span>
+                      <div className="flex items-center gap-2 text-gray-400">
+                        <Phone className="w-4 h-4" />
+                        <span className="text-[15px] font-black tabular-nums">{staff.phone}</span>
+                      </div>
                     </div>
                   </div>
+                  <div className="flex gap-4">
+                    <button className="px-6 py-2.5 bg-gray-50 text-gray-900 rounded-full text-[12px] font-black uppercase tracking-widest hover:bg-gray-100 transition-colors">Edit Profile</button>
+                    <button className="px-6 py-2.5 bg-gray-50 text-gray-900 rounded-full text-[12px] font-black uppercase tracking-widest hover:bg-gray-100 transition-colors">Permissions</button>
+                  </div>
                 </div>
               </div>
 
-              {/* Actions */}
-              <div className="flex gap-2 pt-2">
-                <button className="px-4 py-2 text-[13px] bg-gray-100 text-gray-600 rounded-lg font-medium hover:bg-gray-200">정보 수정</button>
-                <button className="px-4 py-2 text-[13px] bg-gray-100 text-gray-600 rounded-lg font-medium hover:bg-gray-200">정산 설정 변경</button>
+              {/* Settlement Configuration */}
+              <div className="space-y-12">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-[20px] font-black text-gray-900 tracking-tight flex items-center gap-3">
+                    <Scissors className="w-6 h-6 text-accent" /> Financial Configuration
+                  </h4>
+                  <span className="text-[11px] font-black text-gray-300 uppercase tracking-widest">Payout Settings</span>
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-8">
+                  <div className="bg-gray-900 rounded-[40px] p-10 text-white shadow-floating flex flex-col justify-between h-64">
+                    <Shield className="w-8 h-8 text-white/20" />
+                    <div>
+                      <p className="text-[11px] font-black text-white/40 uppercase tracking-widest mb-1">Settlement Type</p>
+                      <p className="text-[24px] font-black tracking-tight">{settlementLabels[staff.settlementType]}</p>
+                    </div>
+                  </div>
+                  
+                  {staff.baseSalary > 0 && (
+                    <div className="bg-white rounded-[40px] p-10 shadow-elegant border border-white flex flex-col justify-between h-64">
+                      <div className="w-8 h-8 rounded-full bg-emerald-50 text-emerald-500 flex items-center justify-center font-black">$</div>
+                      <div>
+                        <p className="text-[11px] font-black text-gray-400 uppercase tracking-widest mb-1">Base Salary</p>
+                        <p className="text-[32px] font-black text-gray-900 tabular-nums leading-none">₩{staff.baseSalary.toLocaleString()}</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <div className="space-y-6 pt-6">
+                  <p className="text-[11px] font-black text-gray-400 uppercase tracking-[0.2em] italic">Incentive Distribution by Category</p>
+                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                    {Object.entries(staff.incentiveRates).map(([cat, rate]) => (
+                      <div key={cat} className="group bg-gray-50/50 hover:bg-white border border-transparent hover:border-gray-100 p-6 rounded-[28px] transition-all duration-500 hover:shadow-elegant">
+                        <p className="text-[11px] font-black text-gray-400 uppercase tracking-widest mb-2">{cat}</p>
+                        <p className="text-[24px] font-black text-gray-900 tabular-nums leading-none group-hover:text-accent transition-colors">{String(rate)}%</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
             </div>
           ) : (
-            <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
-              <p className="text-sm text-gray-400">좌측에서 직원을 선택하세요</p>
+            <div className="h-full flex items-center justify-center p-20 bg-gray-50/50 rounded-[64px] border border-dashed border-gray-200">
+              <p className="text-[14px] font-black text-gray-300 uppercase tracking-[0.2em]">Select a professional to view details</p>
             </div>
           )}
         </div>
       </div>
-    </div>
-  );
-}
-
-function InfoRow({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex items-center justify-between text-[13px]">
-      <span className="text-gray-500">{label}</span>
-      <span className="font-semibold text-gray-800">{value}</span>
     </div>
   );
 }
