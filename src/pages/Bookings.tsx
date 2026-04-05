@@ -30,49 +30,63 @@ export default function Bookings() {
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 className="text-xl font-bold text-gray-900">예약관리</h2>
+    <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h2 className="text-2xl font-black text-gray-900 tracking-tight">예약 관리</h2>
+          <p className="text-[14px] text-gray-500 mt-1 font-medium">실시간 예약 현황을 확인하고 관리하세요.</p>
+        </div>
         <button
           onClick={() => setShowModal(true)}
-          className="flex items-center gap-1.5 px-4 py-2 bg-primary-600 text-white rounded-lg text-[13px] font-semibold hover:bg-primary-700 transition-colors"
+          className="flex items-center justify-center gap-2 px-6 py-3 bg-primary-600 text-white rounded-2xl text-[14px] font-bold hover:bg-primary-700 transition-all shadow-lg shadow-primary-100 active:scale-95"
         >
           <Plus className="w-4 h-4" /> 예약 추가
         </button>
       </div>
 
       {/* Date nav + filters */}
-      <div className="bg-white rounded-xl border border-gray-200 p-4">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <button onClick={() => shiftDate(-1)} className="p-1.5 hover:bg-gray-100 rounded-lg"><ChevronLeft className="w-4 h-4" /></button>
-            <span className="text-[15px] font-bold text-gray-800 min-w-[160px] text-center">
-              {dateObj.getFullYear()}년 {dateObj.getMonth() + 1}월 {dateObj.getDate()}일 ({dayNames[dateObj.getDay()]})
-            </span>
-            <button onClick={() => shiftDate(1)} className="p-1.5 hover:bg-gray-100 rounded-lg"><ChevronRight className="w-4 h-4" /></button>
+      <div className="bg-white rounded-3xl border border-gray-100 p-4 shadow-sm">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+          <div className="flex items-center gap-1 bg-gray-50 p-1 rounded-2xl border border-gray-100/50">
+            <button onClick={() => shiftDate(-1)} className="p-2 hover:bg-white hover:shadow-sm rounded-xl transition-all text-gray-500"><ChevronLeft className="w-5 h-5" /></button>
+            <div className="px-4 text-center min-w-[180px]">
+              <span className="text-[15px] font-black text-gray-900 tracking-tight">
+                {dateObj.getFullYear()}년 {dateObj.getMonth() + 1}월 {dateObj.getDate()}일
+                <span className="text-primary-600 ml-1">({dayNames[dateObj.getDay()]})</span>
+              </span>
+            </div>
+            <button onClick={() => shiftDate(1)} className="p-2 hover:bg-white hover:shadow-sm rounded-xl transition-all text-gray-500"><ChevronRight className="w-5 h-5" /></button>
+            <div className="w-px h-4 bg-gray-200 mx-1" />
             <button
               onClick={() => setSelectedDate('2026-04-06')}
-              className="text-[12px] px-2.5 py-1 rounded-md bg-primary-50 text-primary-600 font-medium ml-1"
+              className="text-[12px] px-4 py-2 rounded-xl bg-white text-gray-900 font-bold shadow-sm hover:bg-gray-50 transition-colors"
             >오늘</button>
           </div>
-          <div className="flex items-center gap-2">
-            <select
-              value={staffFilter}
-              onChange={(e) => setStaffFilter(e.target.value)}
-              className="text-[12px] border border-gray-200 rounded-lg px-2.5 py-1.5 text-gray-600"
-            >
-              <option value="all">전체 직원</option>
-              {staffList.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
-            </select>
-            <div className="flex bg-gray-100 rounded-lg p-0.5">
+          
+          <div className="flex items-center gap-3">
+            <div className="relative">
+              <select
+                value={staffFilter}
+                onChange={(e) => setStaffFilter(e.target.value)}
+                className="appearance-none text-[13px] font-bold border border-gray-100 bg-gray-50 rounded-2xl px-5 py-2.5 pr-10 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary-100 transition-all"
+              >
+                <option value="all">전체 직원</option>
+                {staffList.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
+              </select>
+              <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
+                <ChevronRight className="w-4 h-4 rotate-90" />
+              </div>
+            </div>
+
+            <div className="flex bg-gray-100 rounded-2xl p-1 border border-gray-100">
               <button
                 onClick={() => setView('timeline')}
-                className={`text-[12px] px-3 py-1 rounded-md font-medium transition-colors ${view === 'timeline' ? 'bg-white text-gray-800 shadow-sm' : 'text-gray-500'}`}
+                className={`text-[13px] px-5 py-2 rounded-xl font-bold transition-all ${view === 'timeline' ? 'bg-white text-primary-700 shadow-sm shadow-gray-200' : 'text-gray-500 hover:text-gray-700'}`}
               >타임라인</button>
               <button
                 onClick={() => setView('list')}
-                className={`text-[12px] px-3 py-1 rounded-md font-medium transition-colors ${view === 'list' ? 'bg-white text-gray-800 shadow-sm' : 'text-gray-500'}`}
-              >목록</button>
+                className={`text-[13px] px-5 py-2 rounded-xl font-bold transition-all ${view === 'list' ? 'bg-white text-primary-700 shadow-sm shadow-gray-200' : 'text-gray-500 hover:text-gray-700'}`}
+              >목록 뷰</button>
             </div>
           </div>
         </div>
@@ -97,65 +111,77 @@ function TimelineView({ bookings }: { bookings: Booking[]; onStatusChange: (id: 
     const startM = parseInt(b.startTime.split(':')[1]);
     const endH = parseInt(b.endTime.split(':')[0]);
     const endM = parseInt(b.endTime.split(':')[1]);
-    const top = ((startH - 10) * 60 + startM) * (48 / 60);
-    const height = Math.max(((endH - startH) * 60 + (endM - startM)) * (48 / 60), 24);
+    const top = ((startH - 10) * 60 + startM) * (56 / 60);
+    const height = Math.max(((endH - startH) * 60 + (endM - startM)) * (56 / 60), 32);
     return { top: `${top}px`, height: `${height}px` };
   }
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 overflow-x-auto">
-      <div className="min-w-[600px]">
-        {/* Header */}
-        <div className="flex border-b border-gray-200 sticky top-0 bg-white z-10">
-          <div className="w-16 shrink-0 p-2 text-[11px] font-semibold text-gray-400 border-r border-gray-100">시간</div>
-          {activeStaff.map((s) => (
-            <div key={s.id} className="flex-1 p-2 text-center border-r border-gray-100 last:border-r-0">
-              <div className="flex items-center justify-center gap-1.5">
-                <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: s.profileColor }} />
-                <span className="text-[12px] font-semibold text-gray-700">{s.name}</span>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Body */}
-        <div className="flex relative">
-          {/* Time column */}
-          <div className="w-16 shrink-0 border-r border-gray-100">
-            {Array.from({ length: 12 }, (_, i) => i + 10).map((h) => (
-              <div key={h} className="h-12 border-b border-gray-50 flex items-start justify-end pr-2 pt-0.5">
-                <span className="text-[10px] text-gray-400">{h}:00</span>
+    <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
+      <div className="overflow-x-auto">
+        <div className="min-w-[800px]">
+          {/* Header */}
+          <div className="flex border-b border-gray-100 sticky top-0 bg-white/80 backdrop-blur-md z-10">
+            <div className="w-20 shrink-0 p-4 text-[11px] font-black text-gray-400 uppercase tracking-widest border-r border-gray-50 flex items-center justify-center">Time</div>
+            {activeStaff.map((s) => (
+              <div key={s.id} className="flex-1 p-4 border-r border-gray-50 last:border-r-0">
+                <div className="flex items-center justify-center gap-2">
+                  <div className="w-8 h-8 rounded-xl flex items-center justify-center text-white text-[11px] font-black shadow-sm" style={{ backgroundColor: s.profileColor }}>
+                    {s.name[0]}
+                  </div>
+                  <span className="text-[14px] font-bold text-gray-800">{s.name}</span>
+                </div>
               </div>
             ))}
           </div>
 
-          {/* Staff columns */}
-          {activeStaff.map((s) => {
-            const staffBookings = bookings.filter((b) => b.staffId === s.id && b.status !== 'cancelled' && b.status !== 'no_show');
-            return (
-              <div key={s.id} className="flex-1 border-r border-gray-100 last:border-r-0 relative">
-                {Array.from({ length: 12 }).map((_, i) => (
-                  <div key={i} className="h-12 border-b border-gray-50" />
-                ))}
-                {staffBookings.map((b) => {
-                  const style = getBookingStyle(b);
-                  const bgColor = b.status === 'completed' ? 'bg-green-50 border-green-200' :
-                    b.status === 'confirmed' ? 'bg-blue-50 border-blue-200' : 'bg-yellow-50 border-yellow-200';
-                  return (
-                    <div
-                      key={b.id}
-                      className={`absolute left-1 right-1 rounded-md border px-1.5 py-0.5 overflow-hidden cursor-pointer hover:shadow-md transition-shadow ${bgColor}`}
-                      style={style}
-                      title={`${b.customerName} - ${b.services.map(s => s.name).join(', ')}`}
-                    >
-                      <p className="text-[10px] font-bold text-gray-800 truncate">{b.customerName}</p>
-                      <p className="text-[9px] text-gray-500 truncate">{b.services.map(s => s.name).join(', ')}</p>
-                    </div>
-                  );
-                })}
-              </div>
-            );
-          })}
+          {/* Body */}
+          <div className="flex relative">
+            {/* Time column */}
+            <div className="w-20 shrink-0 border-r border-gray-50 bg-gray-50/30">
+              {Array.from({ length: 12 }, (_, i) => i + 10).map((h) => (
+                <div key={h} className="h-14 border-b border-gray-50 flex items-start justify-center pt-2">
+                  <span className="text-[11px] font-bold text-gray-400 tabular-nums">{h}:00</span>
+                </div>
+              ))}
+            </div>
+
+            {/* Staff columns */}
+            {activeStaff.map((s) => {
+              const staffBookings = bookings.filter((b) => b.staffId === s.id && b.status !== 'cancelled' && b.status !== 'no_show');
+              return (
+                <div key={s.id} className="flex-1 border-r border-gray-50 last:border-r-0 relative group">
+                  {Array.from({ length: 12 }).map((_, i) => (
+                    <div key={i} className="h-14 border-b border-gray-50/50 group-hover:bg-gray-50/30 transition-colors" />
+                  ))}
+                  {staffBookings.map((b) => {
+                    const style = getBookingStyle(b);
+                    const statusConfig = {
+                      completed: 'bg-emerald-50 border-emerald-100 text-emerald-800 shadow-emerald-100/50',
+                      confirmed: 'bg-primary-50 border-primary-100 text-primary-800 shadow-primary-100/50',
+                      pending: 'bg-amber-50 border-amber-100 text-amber-800 shadow-amber-100/50',
+                    };
+                    const config = statusConfig[b.status as keyof typeof statusConfig] || statusConfig.pending;
+                    
+                    return (
+                      <div
+                        key={b.id}
+                        className={`absolute left-1.5 right-1.5 rounded-xl border-2 px-3 py-2 overflow-hidden cursor-pointer hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 z-10 shadow-sm ${config}`}
+                        style={style}
+                      >
+                        <div className="flex flex-col h-full">
+                          <p className="text-[12px] font-black truncate leading-tight">{b.customerName}</p>
+                          <p className="text-[10px] font-bold opacity-70 truncate mt-0.5">
+                            {b.services.map(s => s.name).join(', ')}
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              );
+            })}
+          </div>
         </div>
       </div>
     </div>
@@ -166,49 +192,66 @@ function ListView({ bookings, onStatusChange }: { bookings: Booking[]; onStatusC
   const sorted = [...bookings].sort((a, b) => a.startTime.localeCompare(b.startTime));
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 overflow-x-auto">
-      <table className="w-full text-left">
-        <thead>
-          <tr className="border-b border-gray-100">
-            {['시간', '고객', '서비스', '담당', '채널', '금액', '상태', '액션'].map((h) => (
-              <th key={h} className="px-4 py-3 text-[12px] font-semibold text-gray-400 whitespace-nowrap">{h}</th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {sorted.map((b) => (
-            <tr key={b.id} className="border-b border-gray-50 hover:bg-gray-50">
-              <td className="px-4 py-3 text-[13px] text-gray-700 whitespace-nowrap">{b.startTime}~{b.endTime}</td>
-              <td className="px-4 py-3 text-[13px] font-medium text-gray-800 whitespace-nowrap">{b.customerName}</td>
-              <td className="px-4 py-3 text-[13px] text-gray-600">{b.services.map((s) => s.name).join(', ')}</td>
-              <td className="px-4 py-3 text-[13px] text-gray-600 whitespace-nowrap">{b.staffName}</td>
-              <td className="px-4 py-3">
-                <span className="text-[11px] px-1.5 py-0.5 rounded bg-gray-100 text-gray-500">{channelLabels[b.channel]}</span>
-              </td>
-              <td className="px-4 py-3 text-[13px] font-semibold text-gray-700 whitespace-nowrap">₩{b.totalPrice.toLocaleString()}</td>
-              <td className="px-4 py-3">
-                <span className={`text-[11px] px-2 py-0.5 rounded-full font-medium ${statusColors[b.status]}`}>
-                  {statusLabels[b.status]}
-                </span>
-              </td>
-              <td className="px-4 py-3">
-                {b.status === 'pending' && (
-                  <button
-                    onClick={() => onStatusChange(b.id, 'confirmed')}
-                    className="text-[11px] px-2 py-1 bg-blue-50 text-blue-600 rounded-md font-medium hover:bg-blue-100"
-                  >확정</button>
-                )}
-                {b.status === 'confirmed' && (
-                  <button
-                    onClick={() => onStatusChange(b.id, 'completed')}
-                    className="text-[11px] px-2 py-1 bg-green-50 text-green-600 rounded-md font-medium hover:bg-green-100"
-                  >완료</button>
-                )}
-              </td>
+    <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
+      <div className="overflow-x-auto">
+        <table className="w-full text-left border-collapse">
+          <thead>
+            <tr className="bg-gray-50/50 border-b border-gray-100">
+              {['시간', '고객 정보', '서비스', '담당', '채널', '금액', '상태', '액션'].map((h) => (
+                <th key={h} className="px-6 py-4 text-[11px] font-black text-gray-400 uppercase tracking-widest">{h}</th>
+              ))}
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody className="divide-y divide-gray-50">
+            {sorted.map((b) => (
+              <tr key={b.id} className="group hover:bg-gray-50 transition-colors">
+                <td className="px-6 py-4 text-[14px] font-black text-gray-900 tabular-nums whitespace-nowrap">{b.startTime} - {b.endTime}</td>
+                <td className="px-6 py-4">
+                  <span className="text-[14px] font-bold text-gray-900">{b.customerName}</span>
+                </td>
+                <td className="px-6 py-4">
+                  <span className="text-[13px] font-medium text-gray-600">{b.services.map((s) => s.name).join(', ')}</span>
+                </td>
+                <td className="px-6 py-4">
+                  <div className="flex items-center gap-2">
+                    <div className="w-6 h-6 rounded-lg flex items-center justify-center text-[10px] font-bold text-white shadow-sm" style={{ backgroundColor: staffList.find(s => s.id === b.staffId)?.profileColor }}>
+                      {b.staffName[0]}
+                    </div>
+                    <span className="text-[13px] font-bold text-gray-700">{b.staffName}</span>
+                  </div>
+                </td>
+                <td className="px-6 py-4">
+                  <span className="text-[11px] px-2 py-1 rounded-full font-bold bg-gray-100 text-gray-500 uppercase tracking-tighter">{channelLabels[b.channel]}</span>
+                </td>
+                <td className="px-6 py-4">
+                  <span className="text-[14px] font-black text-gray-900 tabular-nums whitespace-nowrap">₩{b.totalPrice.toLocaleString()}</span>
+                </td>
+                <td className="px-6 py-4">
+                  <span className={`text-[11px] px-3 py-1 rounded-full font-black uppercase tracking-tighter shadow-sm ${statusColors[b.status]}`}>
+                    {statusLabels[b.status]}
+                  </span>
+                </td>
+                <td className="px-6 py-4">
+                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    {b.status === 'pending' && (
+                      <button
+                        onClick={() => onStatusChange(b.id, 'confirmed')}
+                        className="text-[11px] px-3 py-1.5 bg-primary-600 text-white rounded-xl font-bold hover:bg-primary-700 transition-all active:scale-95"
+                      >확정</button>
+                    )}
+                    {b.status === 'confirmed' && (
+                      <button
+                        onClick={() => onStatusChange(b.id, 'completed')}
+                        className="text-[11px] px-3 py-1.5 bg-emerald-600 text-white rounded-xl font-bold hover:bg-emerald-700 transition-all active:scale-95"
+                      >완료</button>
+                    )}
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
@@ -247,64 +290,92 @@ function BookingModal({ onClose, onSave, date }: { onClose: () => void; onSave: 
     onClose();
   }
 
-  const inputClass = "w-full text-[13px] border border-gray-200 rounded-lg px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary-200 focus:border-primary-400";
-  const labelClass = "block text-[12px] font-semibold text-gray-500 mb-1";
+  const inputClass = "w-full text-[14px] font-medium border border-gray-100 bg-gray-50 rounded-2xl px-4 py-3 text-gray-900 focus:outline-none focus:ring-4 focus:ring-primary-100 focus:bg-white focus:border-primary-300 transition-all appearance-none";
+  const labelClass = "block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-1";
 
   return (
-    <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4" onClick={onClose}>
-      <div className="bg-white rounded-2xl w-full max-w-md shadow-xl" onClick={(e) => e.stopPropagation()}>
-        <div className="px-6 py-4 border-b border-gray-100">
-          <h3 className="text-[16px] font-bold text-gray-900">새 예약 추가</h3>
-          <p className="text-[12px] text-gray-400 mt-0.5">{date}</p>
+    <div className="fixed inset-0 bg-gray-900/20 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-in fade-in duration-200" onClick={onClose}>
+      <div className="bg-white rounded-[32px] w-full max-w-lg shadow-2xl shadow-gray-900/10 border border-white overflow-hidden animate-in zoom-in-95 duration-200" onClick={(e) => e.stopPropagation()}>
+        <div className="px-8 py-8 border-b border-gray-50 flex justify-between items-start">
+          <div>
+            <h3 className="text-xl font-black text-gray-900 tracking-tight">새 예약 등록</h3>
+            <p className="text-[13px] text-primary-600 font-bold mt-1">{date} (월요일)</p>
+          </div>
+          <button onClick={onClose} className="p-2 hover:bg-gray-50 rounded-xl transition-colors text-gray-400"><X className="w-5 h-5" /></button>
         </div>
-        <div className="px-6 py-4 space-y-3.5">
-          <div>
-            <label className={labelClass}>고객</label>
-            <select className={inputClass} value={form.customerId} onChange={(e) => setForm({ ...form, customerId: e.target.value })}>
-              <option value="">선택하세요</option>
-              {customerList.map((c) => <option key={c.id} value={c.id}>{c.name} ({c.phone})</option>)}
-            </select>
-          </div>
-          <div>
-            <label className={labelClass}>담당 직원</label>
-            <select className={inputClass} value={form.staffId} onChange={(e) => setForm({ ...form, staffId: e.target.value })}>
-              <option value="">선택하세요</option>
-              {staffList.filter(s => s.isActive).map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
-            </select>
-          </div>
-          <div>
-            <label className={labelClass}>시술</label>
-            <select className={inputClass} value={form.serviceId} onChange={(e) => setForm({ ...form, serviceId: e.target.value })}>
-              <option value="">선택하세요</option>
-              {serviceList.map((s) => <option key={s.id} value={s.id}>{s.name} (₩{s.price.toLocaleString()}, {s.durationMinutes}분)</option>)}
-            </select>
-          </div>
-          <div className="grid grid-cols-2 gap-3">
+        <div className="px-8 py-8 space-y-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <div>
-              <label className={labelClass}>시간</label>
-              <select className={inputClass} value={form.startTime} onChange={(e) => setForm({ ...form, startTime: e.target.value })}>
-                {timeSlots.map((t) => <option key={t} value={t}>{t}</option>)}
-              </select>
+              <label className={labelClass}>고객 선택</label>
+              <div className="relative">
+                <select className={inputClass} value={form.customerId} onChange={(e) => setForm({ ...form, customerId: e.target.value })}>
+                  <option value="">선택하세요</option>
+                  {customerList.map((c) => <option key={c.id} value={c.id}>{c.name} ({c.phone})</option>)}
+                </select>
+                <ChevronRight className="w-4 h-4 absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400 rotate-90" />
+              </div>
             </div>
             <div>
-              <label className={labelClass}>채널</label>
-              <select className={inputClass} value={form.channel} onChange={(e) => setForm({ ...form, channel: e.target.value as Booking['channel'] })}>
-                {Object.entries(channelLabels).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
-              </select>
+              <label className={labelClass}>담당 직원</label>
+              <div className="relative">
+                <select className={inputClass} value={form.staffId} onChange={(e) => setForm({ ...form, staffId: e.target.value })}>
+                  <option value="">선택하세요</option>
+                  {staffList.filter(s => s.isActive).map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
+                </select>
+                <ChevronRight className="w-4 h-4 absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400 rotate-90" />
+              </div>
             </div>
           </div>
+          
+          <div>
+            <label className={labelClass}>서비스 시술</label>
+            <div className="relative">
+              <select className={inputClass} value={form.serviceId} onChange={(e) => setForm({ ...form, serviceId: e.target.value })}>
+                <option value="">선택하세요</option>
+                {serviceList.map((s) => <option key={s.id} value={s.id}>{s.name} (₩{s.price.toLocaleString()}, {s.durationMinutes}분)</option>)}
+              </select>
+              <ChevronRight className="w-4 h-4 absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400 rotate-90" />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-6">
+            <div>
+              <label className={labelClass}>시작 시간</label>
+              <div className="relative">
+                <select className={inputClass} value={form.startTime} onChange={(e) => setForm({ ...form, startTime: e.target.value })}>
+                  {timeSlots.map((t) => <option key={t} value={t}>{t}</option>)}
+                </select>
+                <Clock className="w-4 h-4 absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400" />
+              </div>
+            </div>
+            <div>
+              <label className={labelClass}>예약 채널</label>
+              <div className="relative">
+                <select className={inputClass} value={form.channel} onChange={(e) => setForm({ ...form, channel: e.target.value as Booking['channel'] })}>
+                  {Object.entries(channelLabels).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+                </select>
+                <ChevronRight className="w-4 h-4 absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400 rotate-90" />
+              </div>
+            </div>
+          </div>
+          
           <div>
             <label className={labelClass}>메모</label>
-            <input className={inputClass} placeholder="요청사항 등" value={form.memo} onChange={(e) => setForm({ ...form, memo: e.target.value })} />
+            <textarea 
+              className={`${inputClass} h-24 resize-none`} 
+              placeholder="특별한 요청사항이 있나요?" 
+              value={form.memo} 
+              onChange={(e) => setForm({ ...form, memo: e.target.value })} 
+            />
           </div>
         </div>
-        <div className="px-6 py-4 border-t border-gray-100 flex justify-end gap-2">
-          <button onClick={onClose} className="px-4 py-2 text-[13px] text-gray-500 hover:bg-gray-50 rounded-lg font-medium">취소</button>
+        <div className="px-8 py-6 bg-gray-50 border-t border-gray-100 flex justify-end gap-3">
+          <button onClick={onClose} className="px-6 py-3 text-[14px] text-gray-500 hover:bg-white rounded-2xl font-bold transition-all hover:shadow-sm">취소</button>
           <button
             onClick={handleSave}
             disabled={!form.customerId || !form.staffId || !form.serviceId}
-            className="px-4 py-2 text-[13px] bg-primary-600 text-white rounded-lg font-semibold hover:bg-primary-700 disabled:opacity-40 disabled:cursor-not-allowed"
-          >저장</button>
+            className="px-8 py-3 text-[14px] bg-primary-600 text-white rounded-2xl font-bold hover:bg-primary-700 disabled:opacity-30 disabled:cursor-not-allowed shadow-lg shadow-primary-100 transition-all active:scale-95"
+          >예약 확정하기</button>
         </div>
       </div>
     </div>
