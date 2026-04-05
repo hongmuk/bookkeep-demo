@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Plus, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Plus, ChevronLeft, ChevronRight, Clock, X } from 'lucide-react';
 import { useStore } from '../store';
 import { staffList, serviceList, customerList, statusLabels, statusColors, channelLabels } from '../data/mock';
 import type { Booking, BookingStatus } from '../types';
